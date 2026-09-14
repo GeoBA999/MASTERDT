@@ -1,0 +1,9 @@
+{
+  "name": "Master DT - Fantasy Football Colombia",
+  "short_name": "Master DT",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#071410",
+  "theme_color": "#0C1D16",
+  "description": "Daily fantasy football platform for Liga BetPlay and Colombian managers."
+}

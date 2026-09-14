@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Master DT - Fantasy Football Colombia</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- TOP APP BAR -->
+    <header class="top-nav">
+      <div class="brand-wrapper">
+        <span class="brand-badge">M-DT</span>
+        <div>
+          <div class="brand-title">MASTER DT</div>
+          <div class="brand-sub">FANTASY COLOMBIA • LIGA BETPLAY</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="token-pill" id="tokenPillBtn" title="Billetera de Tokens">
+          <span class="token-icon">🪙</span>
+          <span class="token-amount" id="userTokensHeader">480 DT</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEWPORT CONTENT -->
+    <main id="mainContent">
+
+      <!-- ================= TAB 1: PITCH / ALINEACIÓN ================= -->
+      <section id="tabPitch" class="view-tab">
+        <!-- Live Gameweek & Points Banner -->
+        <div class="gameweek-header">
+          <div class="status-row">
+            <div class="live-indicator">
+              <div class="pulse-dot"></div>
+              <span id="liveMatchStatusText">JORNADA 10 • EN VIVO (72')</span>
+            </div>
+            <div class="team-score-big">
+              <span id="liveTotalPoints">68</span>
+              <span>PTS</span>
+            </div>
+          </div>
+
+          <!-- Budget Bar -->
+          <div class="budget-card">
+            <div class="budget-details">
+              <span>Presupuesto (Máx 100M): <b class="budget-val-spent" id="budgetSpentVal">$96.2M</b></span>
+              <span>Restante: <b class="budget-val-remain" id="budgetRemainVal">$3.8M COP</b></span>
+            </div>
+            <div class="budget-bar-bg">
+              <div class="budget-bar-fill" id="budgetProgressBar" style="width: 96.2%;"></div>
+            </div>
+            <div id="clubWarningMsg" style="font-size: 10px; color: var(--accent-coral); margin-top: 4px; display: none;">
+              ⚠️ Límite excedido: Máximo 3 jugadores por club real.
+            </div>
+          </div>
+        </div>
+
+        <!-- Chips Row -->
+        <div class="chips-scroll-bar">
+          <button class="chip-btn" id="chipTripleCap" data-chip="triple_captain">
+            ⭐ Triple Capitán (3x)
+          </button>
+          <button class="chip-btn" id="chipBenchBoost" data-chip="bench_boost">
+            🛡️ Bench Boost (Suplentes)
+          </button>
+          <button class="chip-btn" id="chipWildcard" data-chip="wildcard">
+            🔄 Comodín Ilimitado
+          </button>
+          <button class="chip-btn" id="chipRegional" data-chip="regional_wildcard">
+            🇨🇴 Comodín Tricolor (1.5x)
+          </button>
+        </div>
+
+        <!-- Formation Bar -->
+        <div class="formation-selector-bar">
+          <div class="formation-chips" id="formationChipsContainer">
+            <!-- Dynamically populated -->
+          </div>
+          <button class="btn-sim-action" id="btnSimulateMatch">
+            ⚡ Simular Minuto
+          </button>
+        </div>
+
+        <!-- THE TACTICAL PITCH -->
+        <div class="pitch-container" id="pitchField">
+          <svg class="pitch-field-lines" viewBox="0 0 400 520" preserveAspectRatio="none">
+            <!-- Midfield Line & Circle -->
+            <line x1="0" y1="260" x2="400" y2="260" stroke="#E6BE55" stroke-width="2" />
+            <circle cx="200" cy="260" r="48" stroke="#E6BE55" stroke-width="2" fill="none" />
+            <circle cx="200" cy="260" r="3" fill="#E6BE55" />
+            <!-- Top Penalty Box -->
+            <rect x="90" y="0" width="220" height="85" stroke="#E6BE55" stroke-width="2" fill="none" />
+            <rect x="145" y="0" width="110" height="35" stroke="#E6BE55" stroke-width="2" fill="none" />
+            <path d="M 160 85 A 40 40 0 0 0 240 85" stroke="#E6BE55" stroke-width="2" fill="none" />
+            <!-- Bottom Penalty Box -->
+            <rect x="90" y="435" width="220" height="85" stroke="#E6BE55" stroke-width="2" fill="none" />
+            <rect x="145" y="485" width="110" height="35" stroke="#E6BE55" stroke-width="2" fill="none" />
+            <path d="M 160 435 A 40 40 0 0 1 240 435" stroke="#E6BE55" stroke-width="2" fill="none" />
+          </svg>
+
+          <!-- FORWARD ROW -->
+          <div class="pitch-row" id="pitchRowDEL"></div>
+
+          <!-- MIDFIELD ROW -->
+          <div class="pitch-row" id="pitchRowMED"></div>
+
+          <!-- DEFENSE ROW -->
+          <div class="pitch-row" id="pitchRowDEF"></div>
+
+          <!-- GOALKEEPER ROW -->
+          <div class="pitch-row" id="pitchRowGK"></div>
+        </div>
+
+        <!-- BENCH (4 SUPLENTES) -->
+        <div class="bench-section">
+          <div class="bench-header">
+            <span class="bench-title">🪑 BANCO DE SUPLENTES (4)</span>
+            <span class="bench-boost-tag" id="benchStatusTag">Solo titular suma</span>
+          </div>
+          <div class="bench-players-row" id="benchPlayersRow">
+            <!-- 4 Bench players dynamically placed -->
+          </div>
+        </div>
+
+        <!-- LIVE EVENTS TICKER -->
+        <div class="content-section" style="padding-top: 0;">
+          <div class="section-title" style="font-size: 16px; margin-bottom: 6px;">
+            <span>📢 INCIDENCIAS EN VIVO</span>
+            <span style="font-size: 11px; color: var(--accent-lime);" id="liveEventCount">3 eventos</span>
+          </div>
+          <div class="events-ticker-box" id="liveTickerBox">
+            <div class="ticker-item">
+              <span class="ticker-min">58'</span>
+              <span class="ticker-text">¡Monumental David Ospina! Tapa mano a mano decisivo para Atlético Nacional. (+2 pts atajadas)</span>
+            </div>
+            <div class="ticker-item">
+              <span class="ticker-min">42'</span>
+              <span class="ticker-text">Edwin Cardona asiste tras pase entre líneas y completa 4 regates exitosos (+4 pts).</span>
+            </div>
+            <div class="ticker-item">
+              <span class="ticker-min">28'</span>
+              <span class="ticker-text">¡Golazo de Radamel Falcao García! Definición de primera en Bogotá (+8 pts Capitán x2).</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: CONSTRUCTOR / SQUAD BUILDER ================= -->
+      <section id="tabBuilder" class="view-tab" style="display: none;">
+        <div class="content-section">
+          <div class="section-title">
+            <span>CONSTRUCTOR DE PLANTILLA</span>
+            <span style="font-family: var(--font-mono); font-size: 13px; color: var(--accent-gold);">15 / 15 Jugadores</span>
+          </div>
+
+          <!-- Squad Rules Summary Card -->
+          <div class="league-card" style="margin-bottom: 16px;">
+            <div class="league-top">
+              <span class="league-name" style="font-size: 16px;">Reglamento Oficial Master DT</span>
+              <span class="league-rake-tag">100M COP</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+              • 15 Jugadores obligatorios: 2 Porteros, 5 Defensas, 5 Volantes, 3 Delanteros.<br>
+              • Máximo 3 futbolistas del mismo club de la Liga BetPlay.<br>
+              • Capitán otorga multiplicador <b>2x</b> (o <b>3x</b> con Triple Capitán).<br>
+              • Capitán Oculto disponible hasta 1h antes del cierre.
+            </div>
+          </div>
+
+          <!-- Position Slot Management -->
+          <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+            <button class="mode-toggle-btn active" id="btnPosFilterAll" data-pos="ALL">Todos (15)</button>
+            <button class="mode-toggle-btn" data-pos="GK">POR (2)</button>
+            <button class="mode-toggle-btn" data-pos="DEF">DEF (5)</button>
+            <button class="mode-toggle-btn" data-pos="MED">MED (5)</button>
+            <button class="mode-toggle-btn" data-pos="DEL">DEL (3)</button>
+          </div>
+
+          <!-- Player List Cards -->
+          <div class="leaderboard-list" id="builderSquadList">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: SCORING ENGINE TESTER & LIGA TABLE ================= -->
+      <section id="tabScoring" class="view-tab" style="display: none;">
+        <div class="content-section">
+          <div class="section-title">
+            <span>TABLA DE PUNTUACIÓN</span>
+            <span style="font-size: 12px; color: var(--accent-lime); font-family: var(--font-mono);">EN TIEMPO REAL</span>
+          </div>
+
+          <!-- Interactive Calculator Inspector -->
+          <div class="agent-banner" style="margin-bottom: 16px;">
+            <div class="agent-title" style="font-size: 17px; color: var(--accent-teal);">SIMULADOR DE REGLAS DE PUNTUACIÓN</div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+              Prueba la función oficial JavaScript <code>calculatePlayerScore(stats, pos)</code> en vivo:
+            </p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+              <div>
+                <label class="form-label">Posición</label>
+                <select class="form-select" id="calcInputPos">
+                  <option value="DEL">Delantero (DEL)</option>
+                  <option value="MED">Mediocampista (MED)</option>
+                  <option value="DEF">Defensa (DEF)</option>
+                  <option value="GK">Arquero (GK/POR)</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label">Minutos Jugados</label>
+                <input type="number" class="form-input" id="calcInputMins" value="90">
+              </div>
+              <div>
+                <label class="form-label">Goles</label>
+                <input type="number" class="form-input" id="calcInputGoals" value="1">
+              </div>
+              <div>
+                <label class="form-label">Asistencias</label>
+                <input type="number" class="form-input" id="calcInputAssists" value="1">
+              </div>
+              <div>
+                <label class="form-label">Regates / Robos</label>
+                <input type="number" class="form-input" id="calcInputDribbles" value="3">
+              </div>
+              <div>
+                <label class="form-label">¿Valla Invicta?</label>
+                <select class="form-select" id="calcInputClean">
+                  <option value="true">Sí (Arco en Cero)</option>
+                  <option value="false" selected>No</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--accent-gold);">Capitán (2x):</span>
+              <input type="checkbox" id="calcInputCap" checked style="transform: scale(1.3);">
+            </div>
+
+            <div style="margin-top: 12px; background: var(--bg-deep); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-family: var(--font-display); font-size: 18px; color: var(--text-main);">PUNTAJE RESULTANTE:</span>
+              <span style="font-family: var(--font-mono); font-size: 24px; font-weight: 900; color: var(--accent-lime);" id="calcResultDisplay">18 PTS</span>
+            </div>
+          </div>
+
+          <!-- Official Scoring Breakdown Reference Table -->
+          <div class="league-card">
+            <div class="league-name" style="font-size: 15px; margin-bottom: 8px;">Matriz de Puntajes Oficial Master DT</div>
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>Acción</th>
+                  <th>POR/DEF</th>
+                  <th>MED</th>
+                  <th>DEL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Minutos (&lt;60 / 60+)</td><td>+1 / +2</td><td>+1 / +2</td><td>+1 / +2</td></tr>
+                <tr><td>Gol Anotado</td><td style="color:var(--accent-lime)">+6</td><td style="color:var(--accent-lime)">+5</td><td style="color:var(--accent-lime)">+4</td></tr>
+                <tr><td>Asistencia</td><td>+3</td><td>+3</td><td>+3</td></tr>
+                <tr><td>Valla Invicta (&ge;60')</td><td style="color:var(--accent-teal)">+4</td><td style="color:var(--accent-teal)">+1</td><td>0</td></tr>
+                <tr><td>Regates (cada 3)</td><td>-</td><td>+1</td><td>+1</td></tr>
+                <tr><td>Recuperaciones (cada 6)</td><td>+1</td><td>+1</td><td>-</td></tr>
+                <tr><td>Atajadas (cada 3)</td><td>+1</td><td>-</td><td>-</td></tr>
+                <tr><td>Penal Atajado</td><td style="color:var(--accent-gold)">+5</td><td>-</td><td>-</td></tr>
+                <tr><td>Goles Recibidos (cada 2)</td><td style="color:var(--accent-coral)">-1</td><td>-</td><td>-</td></tr>
+                <tr><td>Tarjetas (Amarilla/Roja)</td><td style="color:var(--accent-coral)">-1 / -3</td><td style="color:var(--accent-coral)">-1 / -3</td><td style="color:var(--accent-coral)">-1 / -3</td></tr>
+                <tr><td>MVP Rating Bono</td><td>+3, +2, +1</td><td>+3, +2, +1</td><td>+3, +2, +1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: LIGAS & MODOS ================= -->
+      <section id="tabLeagues" class="view-tab" style="display: none;">
+        <div class="content-section">
+          <!-- Game Mode Selector -->
+          <div class="mode-toggle-bar">
+            <button class="mode-toggle-btn active" id="btnModeDaily" data-mode="standard">Ligas Privadas</button>
+            <button class="mode-toggle-btn" id="btnModeWorstXI" data-mode="worst_xi">El Peor Once 😈</button>
+            <button class="mode-toggle-btn" id="btnModeVIP" data-mode="efficient">VIP / Eficiencia</button>
+          </div>
+
+          <!-- Dynamic Leaderboard of Current Selected Tournament -->
+          <div class="section-title">
+            <span id="leagueViewTitle">CLASIFICACIÓN EN VIVO</span>
+            <span style="font-size: 11px; color: var(--accent-coral);" id="leagueViewPrize">POZO: $4.600.000 COP</span>
+          </div>
+
+          <div class="leaderboard-list" id="mainLeaderboardContainer">
+            <!-- Dynamically populated leaderboard rows -->
+          </div>
+
+          <!-- Tournament Tiers List -->
+          <div class="section-title" style="margin-top: 20px;">
+            <span>LIGAS DISPONIBLES FIXTURE</span>
+          </div>
+          <div id="leaguesCardsContainer">
+            <!-- Populated from agent.js LEAGUES_DATA -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: AGENTE & WALLET (ClubGG Model) ================= -->
+      <section id="tabAgent" class="view-tab" style="display: none;">
+        <div class="content-section">
+          
+          <!-- Agent Profile Banner -->
+          <div class="agent-banner">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <div class="agent-title">PANEL RED DE AGENTES</div>
+                <div style="font-size: 12px; color: var(--accent-lime); font-family: var(--font-mono);">
+                  AGENTE ID: AGT-COL-704 • MEDELLÍN
+                </div>
+              </div>
+              <span class="league-rake-tag" style="background: rgba(230, 190, 85, 0.2); color: var(--accent-gold);">
+                25% Rake Share
+              </span>
+            </div>
+
+            <div class="agent-grid">
+              <div class="agent-card-stat">
+                <div class="league-stat-lbl">POOL LIQUIDEZ AGENTE</div>
+                <div class="league-stat-val" style="color: var(--accent-gold); font-size: 18px;" id="agentPoolTokens">8,500 DT</div>
+              </div>
+              <div class="agent-card-stat">
+                <div class="league-stat-lbl">USUARIOS ACTIVOS RED</div>
+                <div class="league-stat-val" style="color: var(--accent-teal); font-size: 18px;">48 Jugadores</div>
+              </div>
+            </div>
+
+            <button class="agent-mint-btn" id="btnOpenMintModal">
+              ➕ CARGAR / MINTEAR TOKENS A JUGADOR
+            </button>
+          </div>
+
+          <!-- Deferred KYC Card -->
+          <div class="league-card" style="margin-bottom: 16px;">
+            <div class="league-top">
+              <span class="league-name" style="font-size: 16px;">Verificación KYC Diferida</span>
+              <span class="league-rake-tag" style="background: rgba(84, 195, 187, 0.2); color: var(--accent-teal);">
+                Sin Fricción Depósito
+              </span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+              Los jugadores depositan y juegan libremente. La verificación de identidad (Cédula de Ciudadanía) es obligatoria únicamente al solicitar retiros.
+            </p>
+            <div id="kycListContainer">
+              <!-- Dynamically populated KYC approvals -->
+            </div>
+          </div>
+
+          <!-- Token Store Tiers for Users -->
+          <div class="section-title">
+            <span>PAQUETES DE TOKENS (RECARGAS)</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;" id="tokenTiersContainer">
+            <!-- Populated from TOKEN_TIERS -->
+          </div>
+
+          <!-- Immutable Audit Trail Logs -->
+          <div class="section-title">
+            <span>REGISTRO AUDITABLE INMUTABLE</span>
+          </div>
+          <div class="league-card">
+            <div style="overflow-x: auto;">
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>Hash Trx</th>
+                    <th>Usuario</th>
+                    <th>Tokens</th>
+                    <th>Método</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="auditLogsBody">
+                  <!-- Populated from agentManager.auditLogs -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM APP NAVIGATION -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="pitch" id="navPitch">
+        <span class="nav-icon">⚽</span>
+        <span class="nav-label">Cancha</span>
+      </button>
+      <button class="nav-item" data-tab="builder" id="navBuilder">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">Plantilla</span>
+      </button>
+      <button class="nav-item" data-tab="scoring" id="navScoring">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Puntajes</span>
+      </button>
+      <button class="nav-item" data-tab="leagues" id="navLeagues">
+        <span class="nav-icon">🏆</span>
+        <span class="nav-label">Ligas</span>
+      </button>
+      <button class="nav-item" data-tab="agent" id="navAgent">
+        <span class="nav-icon">💼</span>
+        <span class="nav-label">Agente</span>
+      </button>
+    </nav>
+
+    <!-- MODAL 1: PLAYER SCORE BREAKDOWN & ROLES -->
+    <div class="modal-overlay" id="playerModal">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <div style="font-family: var(--font-display); font-size: 24px; font-weight: 800;" id="modalPlayerName">Falcao García</div>
+            <div style="color: var(--text-muted); font-size: 12px;" id="modalPlayerMeta">Millonarios • Delantero • $10.5M</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-family: var(--font-mono); font-size: 24px; font-weight: 900; color: var(--accent-lime);" id="modalPlayerPts">16 PTS</div>
+            <div style="font-size: 10px; color: var(--accent-gold);" id="modalPlayerMultiplier">Capitán (2x)</div>
+          </div>
+        </div>
+
+        <!-- Captain / Roles buttons -->
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <button class="btn-sim-action" style="flex: 1; justify-content: center; background: var(--accent-gold);" id="btnSetCaptain">
+            👑 Asignar Capitán (C)
+          </button>
+          <button class="btn-sim-action" style="flex: 1; justify-content: center; background: var(--accent-teal);" id="btnSetViceCaptain">
+            🛡️ Vice-Capitán (VC)
+          </button>
+        </div>
+
+        <!-- Itemized Breakdown List -->
+        <div class="section-title" style="font-size: 14px; margin-bottom: 6px;">DESGLOSE DE PUNTOS EN VIVO</div>
+        <div id="modalBreakdownList" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+          <!-- Populated -->
+        </div>
+
+        <button class="mode-toggle-btn" style="width: 100%; padding: 12px; background: var(--bg-card); color: var(--text-main);" id="btnClosePlayerModal">
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL 2: AGENT MINT / LOAD TOKENS -->
+    <div class="modal-overlay" id="mintModal">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div style="font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--accent-gold); margin-bottom: 12px;">
+          CARGAR TOKENS A JUGADOR (RED AGENTE)
+        </div>
+
+        <form id="mintForm">
+          <div class="form-group">
+            <label class="form-label">ID o Teléfono Nequi/Daviplata del Usuario</label>
+            <input type="text" class="form-input" id="mintUserId" placeholder="Ej: 310 445 8891 o USER-COL-102" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nombre del Jugador</label>
+            <input type="text" class="form-input" id="mintUserName" placeholder="Ej: Juan Camilo Pérez" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Paquete / Cantidad de Tokens</label>
+            <select class="form-select" id="mintTokenSelect">
+              <option value="100" data-cop="9900">100 DT - $9.900 COP</option>
+              <option value="350" data-cop="29900" selected>350 DT - $29.900 COP (Popular)</option>
+              <option value="750" data-cop="59900">750 DT - $59.900 COP (+25% Extra)</option>
+              <option value="1400" data-cop="99900">1.400 DT - $99.900 COP (Master)</option>
+              <option value="2200" data-cop="149900">2.200 DT - $149.900 COP (VIP Club)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Método de Cobro Fuera de App</label>
+            <select class="form-select" id="mintMethodSelect">
+              <option value="Nequi">Nequi (312 458 9921)</option>
+              <option value="Daviplata">Daviplata (300 812 3456)</option>
+              <option value="Bancolombia QR">Bancolombia QR / Transferencia</option>
+              <option value="Efecty">Efecty / Efectivo Físico</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Número de Comprobante / Referencia Bancaria</label>
+            <input type="text" class="form-input" id="mintRefInput" placeholder="Ej: M9812450 o TRX-NEQUI-119" required>
+          </div>
+
+          <button type="submit" class="agent-mint-btn" style="margin-top: 10px;">
+            CONFIRMAR Y EMITIR TOKENS
+          </button>
+          <button type="button" class="mode-toggle-btn" style="width: 100%; margin-top: 8px; padding: 10px;" id="btnCloseMintModal">
+            Cancelar
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LOAD APPLICATION SCRIPTS -->
+  <script type="module">
+    import { state, PLAYERS_DB, FORMATIONS, initDefaultSquad, getSquadTotalCost, getClubCounts, recalculateAllScores, getTeamTotalPoints, startLiveSimulation } from './app.js';
+    import { calculatePlayerScore, POSITION, CHIPS } from './scoring.js';
+    import { TOKEN_TIERS, LEAGUES_DATA, agentManager } from './agent.js';
+
+    // State bindings
+    let selectedPlayerIdForModal = null;
+
+    // DOM Elements
+    const navItems = document.querySelectorAll('.nav-item');
+    const viewTabs = document.querySelectorAll('.view-tab');
+    const liveTotalPointsEl = document.getElementById('liveTotalPoints');
+    const budgetSpentValEl = document.getElementById('budgetSpentVal');
+    const budgetRemainValEl = document.getElementById('budgetRemainVal');
+    const budgetProgressBarEl = document.getElementById('budgetProgressBar');
+    const clubWarningMsgEl = document.getElementById('clubWarningMsg');
+    const formationChipsContainer = document.getElementById('formationChipsContainer');
+    const btnSimulateMatch = document.getElementById('btnSimulateMatch');
+    const userTokensHeaderEl = document.getElementById('userTokensHeader');
+    const mainLeaderboardContainer = document.getElementById('mainLeaderboardContainer');
+    const leaguesCardsContainer = document.getElementById('leaguesCardsContainer');
+    const tokenTiersContainer = document.getElementById('tokenTiersContainer');
+    const auditLogsBody = document.getElementById('auditLogsBody');
+    const kycListContainer = document.getElementById('kycListContainer');
+    const liveTickerBox = document.getElementById('liveTickerBox');
+    const liveEventCountEl = document.getElementById('liveEventCount');
+
+    // Modals
+    const playerModal = document.getElementById('playerModal');
+    const mintModal = document.getElementById('mintModal');
+
+    // 1. NAVIGATION TAB SWITCHER
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const targetTab = item.getAttribute('data-tab');
+        state.activeTab = targetTab;
+
+        navItems.forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+
+        viewTabs.forEach(tab => tab.style.display = 'none');
+        if (targetTab === 'pitch') document.getElementById('tabPitch').style.display = 'block';
+        if (targetTab === 'builder') {
+          document.getElementById('tabBuilder').style.display = 'block';
+          renderBuilderSquad();
+        }
+        if (targetTab === 'scoring') document.getElementById('tabScoring').style.display = 'block';
+        if (targetTab === 'leagues') {
+          document.getElementById('tabLeagues').style.display = 'block';
+          renderLeaderboard();
+          renderLeaguesList();
+        }
+        if (targetTab === 'agent') {
+          document.getElementById('tabAgent').style.display = 'block';
+          renderAgentPortal();
+        }
+      });
+    });
+
+    // 2. FORMATION CHIPS
+    function setupFormations() {
+      formationChipsContainer.innerHTML = '';
+      Object.keys(FORMATIONS).forEach(formKey => {
+        const chip = document.createElement('button');
+        chip.className = `form-chip ${formKey === state.selectedFormation ? 'selected' : ''}`;
+        chip.textContent = formKey;
+        chip.addEventListener('click', () => {
+          state.selectedFormation = formKey;
+          document.querySelectorAll('.form-chip').forEach(c => c.classList.remove('selected'));
+          chip.classList.add('selected');
+          updateFormationSquad();
+          renderPitch();
+        });
+        formationChipsContainer.appendChild(chip);
+      });
+    }
+
+    // Rearrange starters according to chosen formation
+    function updateFormationSquad() {
+      const cfg = FORMATIONS[state.selectedFormation];
+      const allDef = PLAYERS_DB.filter(p => p.pos === 'DEF');
+      const allMed = PLAYERS_DB.filter(p => p.pos === 'MED');
+      const allDel = PLAYERS_DB.filter(p => p.pos === 'DEL');
+      const allGk = PLAYERS_DB.filter(p => p.pos === 'GK');
+
+      const gkStarter = allGk[0];
+      const defStarters = allDef.slice(0, cfg.def);
+      const medStarters = allMed.slice(0, cfg.med);
+      const delStarters = allDel.slice(0, cfg.del);
+
+      state.squad.starters = [gkStarter, ...defStarters, ...medStarters, ...delStarters];
+      state.squad.bench = [
+        allGk[1],
+        allDef[cfg.def] || allDef[4],
+        allMed[cfg.med] || allMed[4],
+        allDel[cfg.del] || allDel[2]
+      ];
+
+      recalculateAllScores();
+      updateUIHeader();
+    }
+
+    // 3. RENDER PITCH VIEW
+    function renderPitch() {
+      const rowGK = document.getElementById('pitchRowGK');
+      const rowDEF = document.getElementById('pitchRowDEF');
+      const rowMED = document.getElementById('pitchRowMED');
+      const rowDEL = document.getElementById('pitchRowDEL');
+
+      rowGK.innerHTML = '';
+      rowDEF.innerHTML = '';
+      rowMED.innerHTML = '';
+      rowDEL.innerHTML = '';
+
+      state.squad.starters.filter(Boolean).forEach(p => {
+        const card = createPitchPlayerCard(p);
+        if (p.pos === 'GK') rowGK.appendChild(card);
+        else if (p.pos === 'DEF') rowDEF.appendChild(card);
+        else if (p.pos === 'MED') rowMED.appendChild(card);
+        else if (p.pos === 'DEL') rowDEL.appendChild(card);
+      });
+
+      // Render Bench
+      const benchRow = document.getElementById('benchPlayersRow');
+      benchRow.innerHTML = '';
+      state.squad.bench.filter(Boolean).forEach(p => {
+        const card = createPitchPlayerCard(p, true);
+        benchRow.appendChild(card);
+      });
+    }
+
+    function createPitchPlayerCard(player, isBench = false) {
+      const card = document.createElement('div');
+      const isCaptain = state.captainId === player.id;
+      const isViceCaptain = state.viceCaptainId === player.id;
+      
+      card.className = `pitch-player-card ${isCaptain ? 'captain' : ''}`;
+      
+      const scoreObj = state.liveScores[player.id];
+      const pts = scoreObj ? scoreObj.totalPoints : 0;
+
+      let badgeHtml = '';
+      if (isCaptain) {
+        badgeHtml = `<div class="captain-badge" title="Capitán (2x)">C</div>`;
+      } else if (isViceCaptain) {
+        badgeHtml = `<div class="captain-badge" style="background:var(--accent-teal);" title="Vice-Capitán">V</div>`;
+      }
+
+      card.innerHTML = `
+        <div class="player-avatar-box">
+          <span>${player.photo || '⚽'}</span>
+          ${badgeHtml}
+          <div class="points-pill">${pts}p</div>
+        </div>
+        <div class="player-name-tag">${player.name.split(' ').slice(-1)[0]}</div>
+        <div class="player-club-tag">${player.club}</div>
+      `;
+
+      card.addEventListener('click', () => {
+        openPlayerDetails(player);
+      });
+
+      return card;
+    }
+
+    // 4. OPEN PLAYER DETAILS & BREAKDOWN MODAL
+    function openPlayerDetails(player) {
+      selectedPlayerIdForModal = player.id;
+      const scoreObj = state.liveScores[player.id] || { totalPoints: 0, breakdown: [] };
+
+      document.getElementById('modalPlayerName').textContent = player.name;
+      document.getElementById('modalPlayerMeta').textContent = `${player.club} • Pos: ${player.pos} • $${player.priceM}M COP`;
+      document.getElementById('modalPlayerPts').textContent = `${scoreObj.totalPoints} PTS`;
+      document.getElementById('modalPlayerMultiplier').textContent = scoreObj.multiplierReason || 'Puntos Base';
+
+      const breakdownEl = document.getElementById('modalBreakdownList');
+      breakdownEl.innerHTML = '';
+
+      if (scoreObj.breakdown && scoreObj.breakdown.length > 0) {
+        scoreObj.breakdown.forEach(item => {
+          const row = document.createElement('div');
+          row.style.display = 'flex';
+          row.style.justifyContent = 'space-between';
+          row.style.fontSize = '12px';
+          row.style.padding = '4px 0';
+          row.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+          row.innerHTML = `
+            <span style="color:var(--text-muted);">${item.rule} (${item.desc})</span>
+            <span style="font-family:var(--font-mono); font-weight:700; color:${item.pts >= 0 ? 'var(--accent-lime)' : 'var(--accent-coral)'};">
+              ${item.pts > 0 ? '+' : ''}${item.pts}
+            </span>
+          `;
+          breakdownEl.appendChild(row);
+        });
+      } else {
+        breakdownEl.innerHTML = `<div style="color:var(--text-dim); font-size:11px;">Aún no registra estadísticas en este partido.</div>`;
+      }
+
+      playerModal.classList.add('open');
+    }
+
+    document.getElementById('btnClosePlayerModal').addEventListener('click', () => {
+      playerModal.classList.remove('open');
+    });
+
+    document.getElementById('btnSetCaptain').addEventListener('click', () => {
+      if (selectedPlayerIdForModal) {
+        state.captainId = selectedPlayerIdForModal;
+        if (state.viceCaptainId === selectedPlayerIdForModal) state.viceCaptainId = null;
+        recalculateAllScores();
+        updateUIHeader();
+        renderPitch();
+        playerModal.classList.remove('open');
+      }
+    });
+
+    document.getElementById('btnSetViceCaptain').addEventListener('click', () => {
+      if (selectedPlayerIdForModal) {
+        state.viceCaptainId = selectedPlayerIdForModal;
+        if (state.captainId === selectedPlayerIdForModal) state.captainId = null;
+        recalculateAllScores();
+        updateUIHeader();
+        renderPitch();
+        playerModal.classList.remove('open');
+      }
+    });
+
+    // 5. CHIPS INTERACTIONS
+    const chipBtns = document.querySelectorAll('.chip-btn');
+    chipBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chip = btn.getAttribute('data-chip');
+        if (state.activeChip === chip) {
+          state.activeChip = CHIPS.NONE;
+          btn.classList.remove('active');
+        } else {
+          chipBtns.forEach(b => b.classList.remove('active'));
+          state.activeChip = chip;
+          btn.classList.add('active');
+        }
+        
+        // Update bench status text
+        const benchTag = document.getElementById('benchStatusTag');
+        if (state.activeChip === CHIPS.BENCH_BOOST) {
+          benchTag.textContent = '🔥 BENCH BOOST ACTIVO (Suman todos)';
+          benchTag.style.color = 'var(--accent-lime)';
+        } else {
+          benchTag.textContent = 'Solo titular suma';
+          benchTag.style.color = 'var(--text-muted)';
+        }
+
+        recalculateAllScores();
+        updateUIHeader();
+        renderPitch();
+      });
+    });
+
+    // 6. SIMULATE MATCH EVENTS (Real-time live scoring)
+    btnSimulateMatch.addEventListener('click', () => {
+      btnSimulateMatch.disabled = true;
+      btnSimulateMatch.textContent = '⏱️ Jugando...';
+
+      startLiveSimulation(res => {
+        updateUIHeader();
+        renderPitch();
+        renderLiveTicker();
+
+        if (res.finished) {
+          btnSimulateMatch.disabled = false;
+          btnSimulateMatch.textContent = '⚡ Simular Minuto';
+          document.getElementById('liveMatchStatusText').textContent = 'JORNADA 10 • FINALIZADO (90\')';
+        }
+      });
+    });
+
+    function renderLiveTicker() {
+      liveTickerBox.innerHTML = '';
+      liveEventCountEl.textContent = `${state.liveEvents.length} eventos`;
+      state.liveEvents.forEach(ev => {
+        const item = document.createElement('div');
+        item.className = 'ticker-item';
+        item.innerHTML = `
+          <span class="ticker-min">${ev.min}'</span>
+          <span class="ticker-text">${ev.text}</span>
+        `;
+        liveTickerBox.appendChild(item);
+      });
+    }
+
+    // 7. BUILDER SQUAD VIEW
+    function renderBuilderSquad(filterPos = 'ALL') {
+      const container = document.getElementById('builderSquadList');
+      container.innerHTML = '';
+
+      const all = [...state.squad.starters, ...state.squad.bench].filter(Boolean);
+      const filtered = filterPos === 'ALL' ? all : all.filter(p => p.pos === filterPos);
+
+      filtered.forEach((p, index) => {
+        const card = document.createElement('div');
+        card.className = 'leaderboard-card';
+        const isCap = state.captainId === p.id;
+
+        card.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="player-avatar-box" style="width:36px; height:36px; font-size:16px;">
+              <span>${p.photo || '⚽'}</span>
+            </div>
+            <div class="manager-meta">
+              <div class="manager-name">${p.name} ${isCap ? '<span style="color:var(--accent-gold); font-size:10px;">[CAP]</span>' : ''}</div>
+              <div class="manager-sub">${p.club} • ${p.pos}</div>
+            </div>
+          </div>
+          <div class="score-meta">
+            <div class="score-pts">$${p.priceM}M</div>
+            <div class="prize-pts">${state.liveScores[p.id]?.totalPoints || 0} pts</div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => openPlayerDetails(p));
+        container.appendChild(card);
+      });
+    }
+
+    // Position filter buttons in builder
+    document.querySelectorAll('#tabBuilder .mode-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#tabBuilder .mode-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const pos = btn.getAttribute('data-pos');
+        renderBuilderSquad(pos);
+      });
+    });
+
+    // 8. LEADERBOARD & GAME MODES
+    function renderLeaderboard() {
+      mainLeaderboardContainer.innerHTML = '';
+      state.leaderboard.forEach(entry => {
+        const card = document.createElement('div');
+        card.className = `leaderboard-card ${entry.isUser ? 'user-card' : ''}`;
+        
+        let rankClass = '';
+        if (entry.rank === 1) rankClass = 'top-1';
+        else if (entry.rank === 2) rankClass = 'top-2';
+        else if (entry.rank === 3) rankClass = 'top-3';
+
+        card.innerHTML = `
+          <div style="display:flex; align-items:center;">
+            <div class="rank-badge ${rankClass}">#${entry.rank}</div>
+            <div class="manager-meta">
+              <div class="manager-name">${entry.manager}</div>
+              <div class="manager-sub">Costo: $${entry.squadCost}M COP • ${state.currentMode === 'worst_xi' ? 'Inverted XI' : 'BetPlay Lvl 2'}</div>
+            </div>
+          </div>
+          <div class="score-meta">
+            <div class="score-pts">${entry.points} PTS</div>
+            <div class="prize-pts">${entry.prizeCop}</div>
+          </div>
+        `;
+        mainLeaderboardContainer.appendChild(card);
+      });
+    }
+
+    function renderLeaguesList() {
+      leaguesCardsContainer.innerHTML = '';
+      LEAGUES_DATA.forEach(league => {
+        const card = document.createElement('div');
+        card.className = 'league-card';
+        card.innerHTML = `
+          <div class="league-top">
+            <div>
+              <div class="league-name">${league.name}</div>
+              <div style="font-size:11px; color:var(--accent-lime); font-family:var(--font-mono);">${league.status}</div>
+            </div>
+            <span class="league-rake-tag">Rake: ${league.rakePercent}%</span>
+          </div>
+          <div class="league-grid">
+            <div class="league-stat-box">
+              <div class="league-stat-lbl">BUY-IN (ENTRADA)</div>
+              <div class="league-stat-val">$${(league.buyInCop).toLocaleString('es-CO')} COP (${league.buyInTokens} DT)</div>
+            </div>
+            <div class="league-stat-box">
+              <div class="league-stat-lbl">POZO GARANTIZADO</div>
+              <div class="league-stat-val" style="color:var(--accent-gold);">$${(league.gtdPrizeCop).toLocaleString('es-CO')} COP</div>
+            </div>
+          </div>
+          <button class="btn-sim-action" style="width:100%; margin-top:10px; justify-content:center; background:var(--accent-teal);" onclick="alert('Te has unido exitosamente a la ${league.name} con tu plantilla actual!')">
+            UNIRSE CON ESTA PLANTILLA
+          </button>
+        `;
+        leaguesCardsContainer.appendChild(card);
+      });
+    }
+
+    // Tournament mode switcher
+    const modeDailyBtn = document.getElementById('btnModeDaily');
+    const modeWorstXIBtn = document.getElementById('btnModeWorstXI');
+    const modeVIPBtn = document.getElementById('btnModeVIP');
+
+    modeDailyBtn.addEventListener('click', () => switchTournamentMode('standard'));
+    modeWorstXIBtn.addEventListener('click', () => switchTournamentMode('worst_xi'));
+    modeVIPBtn.addEventListener('click', () => switchTournamentMode('efficient'));
+
+    function switchTournamentMode(mode) {
+      state.currentMode = mode;
+      [modeDailyBtn, modeWorstXIBtn, modeVIPBtn].forEach(b => b.classList.remove('active'));
+
+      const titleEl = document.getElementById('leagueViewTitle');
+      const prizeEl = document.getElementById('leagueViewPrize');
+
+      if (mode === 'standard') {
+        modeDailyBtn.classList.add('active');
+        titleEl.textContent = 'LIGAS PRIVADAS NIVEL 1-4+';
+        prizeEl.textContent = 'POZO: $4.600.000 COP';
+      } else if (mode === 'worst_xi') {
+        modeWorstXIBtn.classList.add('active');
+        titleEl.textContent = 'EL PEOR ONCE (MENOR PUNTAJE GANA)';
+        prizeEl.textContent = 'POZO: $1.380.000 COP • ANTI-BANCA';
+      } else if (mode === 'efficient') {
+        modeVIPBtn.classList.add('active');
+        titleEl.textContent = 'GERENTE MÁS EFICIENTE (PTS / COSTO)';
+        prizeEl.textContent = 'POZO: $2.790.000 COP GTD';
+      }
+
+      recalculateAllScores();
+      renderLeaderboard();
+    }
+
+    // 9. AGENT PORTAL & AUDIT LOGS
+    function renderAgentPortal() {
+      document.getElementById('agentPoolTokens').textContent = `${agentManager.agentProfile.liquidityTokens.toLocaleString('es-CO')} DT`;
+      
+      // Render KYC
+      kycListContainer.innerHTML = '';
+      agentManager.kycRequests.forEach(k => {
+        const item = document.createElement('div');
+        item.style.background = 'var(--bg-dark)';
+        item.style.padding = '8px 10px';
+        item.style.borderRadius = '8px';
+        item.style.marginBottom = '6px';
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.style.alignItems = 'center';
+
+        item.innerHTML = `
+          <div>
+            <div style="font-weight:700; font-size:12px;">${k.userName} (${k.documentNumber})</div>
+            <div style="font-size:10px; color:var(--text-dim);">Retiro: $${k.withdrawalAmountCop.toLocaleString('es-CO')} COP • ${k.bankAccount}</div>
+          </div>
+          <div>
+            ${k.status === 'APROBADO' 
+              ? '<span style="color:var(--accent-green); font-size:11px; font-weight:700;">VERIFICADO</span>'
+              : `<button class="btn-sim-action" style="padding:4px 8px; font-size:11px; background:var(--accent-green);" onclick="window.approveKycAction('${k.userId}')">Aprobar</button>`
+            }
+          </div>
+        `;
+        kycListContainer.appendChild(item);
+      });
+
+      // Render Token Purchase Tiers for Users
+      tokenTiersContainer.innerHTML = '';
+      TOKEN_TIERS.forEach(tier => {
+        const card = document.createElement('div');
+        card.className = 'leaderboard-card';
+        card.innerHTML = `
+          <div>
+            <div style="font-weight:700; font-size:13px;">${tier.tokens} DT Tokens ${tier.bonus ? `<span style="color:var(--accent-lime); font-size:10px;">(${tier.bonus})</span>` : ''}</div>
+            <div style="font-size:11px; color:var(--text-muted);">${tier.label} • Red Nequi / Daviplata / QR</div>
+          </div>
+          <button class="btn-sim-action" style="background:var(--accent-gold); padding:6px 12px; font-size:12px;" onclick="window.buyTokensTier(${tier.tokens}, ${tier.priceCop})">
+            $${tier.priceCop.toLocaleString('es-CO')} COP
+          </button>
+        `;
+        tokenTiersContainer.appendChild(card);
+      });
+
+      // Render Audit Logs
+      renderAuditLogs();
+    }
+
+    function renderAuditLogs() {
+      auditLogsBody.innerHTML = '';
+      agentManager.auditLogs.forEach(log => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="audit-hash">${log.hash}</td>
+          <td>${log.userName}<br><span style="color:var(--text-dim);">${log.userId}</span></td>
+          <td style="color:var(--accent-gold); font-weight:700;">+${log.amountTokens} DT</td>
+          <td>${log.paymentMethod}</td>
+          <td class="audit-status-done">${log.status}</td>
+        `;
+        auditLogsBody.appendChild(row);
+      });
+    }
+
+    // Global action helpers for inline clicks
+    window.approveKycAction = function(userId) {
+      agentManager.approveKyc(userId);
+      renderAgentPortal();
+      alert('¡Documento de identidad verificado con éxito! Retiro autorizado para transferencia.');
+    };
+
+    window.buyTokensTier = function(tokens, cop) {
+      state.userTokens += tokens;
+      userTokensHeaderEl.textContent = `${state.userTokens} DT`;
+      agentManager.mintTokens('USER-ACTUAL-ME', 'Mi Usuario', tokens, cop, 'Nequi', 'VOUCHER-' + Date.now().toString().slice(-5));
+      renderAgentPortal();
+      alert(`¡Recarga exitosa de ${tokens} DT Tokens por $${cop.toLocaleString('es-CO')} COP vía Nequi!`);
+    };
+
+    // Agent Manual Mint Modal
+    document.getElementById('btnOpenMintModal').addEventListener('click', () => {
+      mintModal.classList.add('open');
+    });
+
+    document.getElementById('btnCloseMintModal').addEventListener('click', () => {
+      mintModal.classList.remove('open');
+    });
+
+    document.getElementById('mintForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('mintUserId').value.trim();
+      const userName = document.getElementById('mintUserName').value.trim();
+      const select = document.getElementById('mintTokenSelect');
+      const tokens = Number(select.value);
+      const cop = Number(select.selectedOptions[0].getAttribute('data-cop'));
+      const method = document.getElementById('mintMethodSelect').value;
+      const ref = document.getElementById('mintRefInput').value.trim();
+
+      const record = agentManager.mintTokens(userId, userName, tokens, cop, method, ref);
+      mintModal.classList.remove('open');
+      renderAgentPortal();
+      alert(`✅ Tokens emitidos con éxito a ${userName}!\nHash Inmutable: ${record.hash}\nTokens acreditados: ${tokens} DT`);
+    });
+
+    // 10. REAL-TIME SCORING CALCULATOR INSPECTOR IN TAB 3
+    const calcInputPos = document.getElementById('calcInputPos');
+    const calcInputMins = document.getElementById('calcInputMins');
+    const calcInputGoals = document.getElementById('calcInputGoals');
+    const calcInputAssists = document.getElementById('calcInputAssists');
+    const calcInputDribbles = document.getElementById('calcInputDribbles');
+    const calcInputClean = document.getElementById('calcInputClean');
+    const calcInputCap = document.getElementById('calcInputCap');
+    const calcResultDisplay = document.getElementById('calcResultDisplay');
+
+    function updateInspectorResult() {
+      const pos = calcInputPos.value;
+      const stats = {
+        minutes: Number(calcInputMins.value) || 0,
+        goals: Number(calcInputGoals.value) || 0,
+        assists: Number(calcInputAssists.value) || 0,
+        dribbles: Number(calcInputDribbles.value) || 0,
+        cleanSheet: calcInputClean.value === 'true'
+      };
+      const isCap = calcInputCap.checked;
+
+      const res = calculatePlayerScore(stats, pos, { isCaptain: isCap });
+      calcResultDisplay.textContent = `${res.totalPoints} PTS`;
+    }
+
+    [calcInputPos, calcInputMins, calcInputGoals, calcInputAssists, calcInputDribbles, calcInputClean, calcInputCap].forEach(el => {
+      el.addEventListener('input', updateInspectorResult);
+      el.addEventListener('change', updateInspectorResult);
+    });
+
+    // 11. UI HEADER & BUDGET UPDATE
+    function updateUIHeader() {
+      const pts = getTeamTotalPoints();
+      liveTotalPointsEl.textContent = pts;
+
+      const cost = getSquadTotalCost();
+      budgetSpentValEl.textContent = `$${cost}M`;
+      const remain = Math.max(0, Number((state.maxBudgetM - cost).toFixed(1)));
+      budgetRemainValEl.textContent = `$${remain}M COP`;
+
+      const pct = Math.min(100, (cost / state.maxBudgetM) * 100);
+      budgetProgressBarEl.style.width = `${pct}%`;
+      if (cost > state.maxBudgetM) {
+        budgetProgressBarEl.classList.add('overbudget');
+      } else {
+        budgetProgressBarEl.classList.remove('overbudget');
+      }
+
+      // Check club limit
+      const clubCounts = getClubCounts();
+      let hasViolation = false;
+      Object.keys(clubCounts).forEach(club => {
+        if (clubCounts[club] > state.maxPerClub) hasViolation = true;
+      });
+      clubWarningMsgEl.style.display = hasViolation ? 'block' : 'none';
+    }
+
+    // INITIAL LAUNCH
+    setupFormations();
+    updateUIHeader();
+    renderPitch();
+    updateInspectorResult();
+  </script>
+</body>
+</html>
