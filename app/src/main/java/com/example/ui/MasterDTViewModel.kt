@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.MasterDTRepository
 import com.example.engine.ScoringEngine
 import com.example.models.AuditLog
+import com.example.models.ChargeHistoryItem
 import com.example.models.Chip
+import com.example.models.GameHistoryItem
 import com.example.models.KycRequest
 import com.example.models.LeaderboardEntry
+import com.example.models.LeagueItem
 import com.example.models.MatchEvent
 import com.example.models.Player
 import com.example.models.PlayerMatchStats
@@ -15,6 +18,7 @@ import com.example.models.Position
 import com.example.models.ScoreResult
 import com.example.models.TokenTier
 import com.example.models.TournamentMode
+import com.example.models.UserProfile
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +34,11 @@ import kotlin.random.Random
 data class FormationConfig(val name: String, val def: Int, val med: Int, val del: Int)
 
 data class MasterDTUiState(
-  val selectedTab: Int = 0, // 0: Cancha, 1: Plantilla, 2: Puntajes, 3: Ligas, 4: Agente
+  val isLoggedIn: Boolean = true,
+  val userProfile: UserProfile = MasterDTRepository.defaultUser,
+  val chargeHistory: List<ChargeHistoryItem> = MasterDTRepository.initialChargeHistory,
+  val gameHistory: List<GameHistoryItem> = MasterDTRepository.initialGameHistory,
+  val selectedTab: Int = 0, // 0: Home / Cancha, 1: Plantilla, 2: Ligas, 3: Agente, 4: Perfil, 5: Puntajes
   val selectedFormation: String = "4-3-3",
   val starters: List<Player> = emptyList(),
   val bench: List<Player> = emptyList(),
@@ -48,7 +56,11 @@ data class MasterDTUiState(
   val kycRequests: List<KycRequest> = MasterDTRepository.initialKycRequests,
   val agentLiquidityTokens: Int = 8500,
   val selectedPlayerForModal: Player? = null,
-  val showMintDialog: Boolean = false
+  val showMintDialog: Boolean = false,
+  val currentEnrolledLeague: LeagueItem? = MasterDTRepository.leagues.firstOrNull(),
+  val enrolledLeagueIds: Set<String> = setOf("liga_apertura_2026"),
+  val leaguePendingEnrollment: LeagueItem? = null,
+  val squadConfirmed: Boolean = true
 ) {
   val totalSquadCost: Double
     get() = (starters + bench).sumOf { it.priceM }
@@ -251,10 +263,210 @@ class MasterDTViewModel : ViewModel() {
   }
 
   fun buyTokenPack(tier: TokenTier) {
+    val pseudoHash = "0x" + Random.nextInt(0x100000, 0xFFFFFF).toString(16) + "..." + Random.nextInt(0x1000, 0xFFFF).toString(16)
+    val now = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(Date())
+    val newCharge = ChargeHistoryItem(
+      id = "CHG-${System.currentTimeMillis() % 100000}",
+      date = now,
+      tokensAdded = tier.tokens,
+      amountCop = tier.priceCop,
+      paymentMethod = "Nequi / Daviplata",
+      reference = "TRX-NQ-${Random.nextInt(100000, 999999)}",
+      hash = pseudoHash,
+      status = "COMPLETADO"
+    )
+
     _uiState.update {
-      it.copy(userTokens = it.userTokens + tier.tokens)
+      it.copy(
+        userTokens = it.userTokens + tier.tokens,
+        chargeHistory = listOf(newCharge) + it.chargeHistory
+      )
     }
-    mintTokens("USER-ACTUAL-ME", "Mi Cuenta", tier.tokens, tier.priceCop, "Nequi", "VOUCHER-${System.currentTimeMillis() % 10000}")
+    mintTokens("USER-ACTUAL-ME", "Mi Cuenta", tier.tokens, tier.priceCop, "Nequi", newCharge.reference)
+  }
+
+  fun login(emailOrPhone: String, pass: String) {
+    val name = if (emailOrPhone.contains("@")) {
+      emailOrPhone.substringBefore("@").replace(".", " ").replaceFirstChar { it.uppercase() }
+    } else {
+      "DT " + emailOrPhone.takeLast(4)
+    }
+    _uiState.update {
+      it.copy(
+        isLoggedIn = true,
+        selectedTab = 0, // Directo al Home (Cancha y plantilla activa)
+        userProfile = it.userProfile.copy(
+          email = if (emailOrPhone.contains("@")) emailOrPhone else it.userProfile.email,
+          phone = if (!emailOrPhone.contains("@")) emailOrPhone else it.userProfile.phone,
+          name = if (name.isNotBlank()) name else it.userProfile.name
+        )
+      )
+    }
+  }
+
+  fun loginAsDemo() {
+    _uiState.update {
+      it.copy(
+        isLoggedIn = true,
+        selectedTab = 0, // Directo al Home (Cancha)
+        userProfile = MasterDTRepository.defaultUser
+      )
+    }
+  }
+
+  fun register(name: String, email: String, phone: String, docId: String, club: String, city: String) {
+    val newProfile = UserProfile(
+      id = "USR-${Random.nextInt(1000, 9999)}-COL",
+      name = name.ifBlank { "Nuevo DT" },
+      email = email.ifBlank { "dt.nuevo@masterdt.co" },
+      phone = phone.ifBlank { "300 000 0000" },
+      documentId = docId.ifBlank { "1.000.000.000" },
+      city = city.ifBlank { "Bogotá D.C." },
+      favoriteClub = club.ifBlank { "Millonarios" },
+      avatarEmoji = "⚽",
+      tierLabel = "DT Principiante • Nivel 1",
+      kycVerified = false,
+      registeredDate = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date())
+    )
+    _uiState.update {
+      it.copy(
+        isLoggedIn = true,
+        selectedTab = 0, // Directo al Home (Cancha)
+        userProfile = newProfile,
+        userTokens = 200 // Bonus de bienvenida
+      )
+    }
+  }
+
+  fun setPendingLeague(league: LeagueItem?) {
+    _uiState.update { it.copy(leaguePendingEnrollment = league) }
+  }
+
+  fun enrollInLeague(league: LeagueItem): Boolean {
+    val currentTokens = _uiState.value.userTokens
+    if (currentTokens < league.buyInTokens) {
+      return false
+    }
+
+    val pseudoHash = "0x" + Random.nextInt(0x100000, 0xFFFFFF).toString(16) + "..." + Random.nextInt(0x1000, 0xFFFF).toString(16)
+    val now = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(Date())
+    val newCharge = ChargeHistoryItem(
+      id = "ENROLL-${System.currentTimeMillis() % 100000}",
+      date = now,
+      tokensAdded = -league.buyInTokens,
+      amountCop = league.buyInCop,
+      paymentMethod = "Inscripción en Tokens DT",
+      reference = "INSC-${league.id.uppercase()}-${Random.nextInt(1000, 9999)}",
+      hash = pseudoHash,
+      status = "PAGADO"
+    )
+
+    _uiState.update {
+      it.copy(
+        userTokens = it.userTokens - league.buyInTokens,
+        enrolledLeagueIds = it.enrolledLeagueIds + league.id,
+        currentEnrolledLeague = league,
+        leaguePendingEnrollment = null,
+        selectedTab = 1, // Paso 3: Escoger el equipo (SquadBuilderScreen)
+        chargeHistory = listOf(newCharge) + it.chargeHistory
+      )
+    }
+    return true
+  }
+
+  fun selectLeagueForSquad(league: LeagueItem) {
+    _uiState.update {
+      it.copy(
+        currentEnrolledLeague = league,
+        selectedTab = 1
+      )
+    }
+  }
+
+  fun confirmSquadForLeague() {
+    _uiState.update {
+      it.copy(
+        squadConfirmed = true,
+        selectedTab = 0 // Cancha táctica (Once en juego y simulación)
+      )
+    }
+  }
+
+  fun swapPlayerInSquad(oldPlayer: Player, newPlayer: Player) {
+    val currentStarters = _uiState.value.starters.toMutableList()
+    val currentBench = _uiState.value.bench.toMutableList()
+
+    val starterIndex = currentStarters.indexOfFirst { it.id == oldPlayer.id }
+    if (starterIndex >= 0) {
+      currentStarters[starterIndex] = newPlayer
+    } else {
+      val benchIndex = currentBench.indexOfFirst { it.id == oldPlayer.id }
+      if (benchIndex >= 0) {
+        currentBench[benchIndex] = newPlayer
+      }
+    }
+
+    // Update stats for the new player if missing
+    val stats = _uiState.value.playerStats.toMutableMap()
+    if (!stats.containsKey(newPlayer.id)) {
+      stats[newPlayer.id] = PlayerMatchStats(minutes = 90, recoveries = 4)
+    }
+
+    _uiState.update {
+      it.copy(
+        starters = currentStarters,
+        bench = currentBench,
+        playerStats = stats,
+        captainId = if (it.captainId == oldPlayer.id) newPlayer.id else it.captainId,
+        viceCaptainId = if (it.viceCaptainId == oldPlayer.id) newPlayer.id else it.viceCaptainId
+      )
+    }
+    recalculateScores()
+  }
+
+  fun addFreeDemoTokens() {
+    _uiState.update {
+      it.copy(userTokens = it.userTokens + 200)
+    }
+  }
+
+  fun logout() {
+    _uiState.update {
+      it.copy(isLoggedIn = false)
+    }
+  }
+
+  fun updateProfile(name: String, phone: String, docId: String, club: String, city: String) {
+    _uiState.update {
+      it.copy(
+        userProfile = it.userProfile.copy(
+          name = name.ifBlank { it.userProfile.name },
+          phone = phone.ifBlank { it.userProfile.phone },
+          documentId = docId.ifBlank { it.userProfile.documentId },
+          favoriteClub = club.ifBlank { it.userProfile.favoriteClub },
+          city = city.ifBlank { it.userProfile.city }
+        )
+      )
+    }
+  }
+
+  fun requestWithdrawal(tokensToWithdraw: Int, bankAccount: String) {
+    if (tokensToWithdraw <= 0 || tokensToWithdraw > _uiState.value.userTokens) return
+    val copEquivalent = tokensToWithdraw * 85L
+    val newKyc = KycRequest(
+      userId = _uiState.value.userProfile.id,
+      userName = _uiState.value.userProfile.name,
+      documentNumber = "C.C. ${_uiState.value.userProfile.documentId}",
+      withdrawalAmountCop = copEquivalent,
+      bankAccount = bankAccount.ifBlank { "Nequi ${_uiState.value.userProfile.phone}" },
+      status = if (_uiState.value.userProfile.kycVerified) "APROBADO" else "PENDIENTE_REVISION"
+    )
+    _uiState.update {
+      it.copy(
+        userTokens = it.userTokens - tokensToWithdraw,
+        kycRequests = listOf(newKyc) + it.kycRequests
+      )
+    }
   }
 
   fun startLiveSimulation() {

@@ -22,13 +22,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SportsSoccer
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -51,10 +54,12 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.MasterDTUiState
 import com.example.ui.MasterDTViewModel
 import com.example.ui.screens.AgentScreen
+import com.example.ui.screens.AuthScreen
 import com.example.ui.screens.LeaguesScreen
 import com.example.ui.screens.MintTokensDialog
 import com.example.ui.screens.PitchScreen
 import com.example.ui.screens.PlayerDetailsDialog
+import com.example.ui.screens.ProfileScreen
 import com.example.ui.screens.ScoringRulesScreen
 import com.example.ui.screens.SquadBuilderScreen
 import com.example.ui.theme.AccentGold
@@ -74,10 +79,14 @@ class MainActivity : ComponentActivity() {
       MyApplicationTheme {
         val uiState by viewModel.uiState.collectAsState()
 
-        MasterDTApp(
-          viewModel = viewModel,
-          uiState = uiState
-        )
+        if (!uiState.isLoggedIn) {
+          AuthScreen(viewModel = viewModel)
+        } else {
+          MasterDTApp(
+            viewModel = viewModel,
+            uiState = uiState
+          )
+        }
       }
     }
   }
@@ -99,7 +108,10 @@ fun MasterDTApp(
       TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkForestBg),
         title = {
-          Row(verticalAlignment = Alignment.CenterVertically) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { viewModel.setTab(0) }
+          ) {
             Box(
               modifier = Modifier
                 .size(34.dp)
@@ -119,26 +131,40 @@ fun MasterDTApp(
               Text(
                 text = "MASTER DT",
                 color = Color.White,
-                fontSize = 17.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Black
               )
               Text(
-                text = "FANTASY COLOMBIA • LIGA BETPLAY",
-                color = TextMuted,
-                fontSize = 9.sp,
+                text = "DT: ${uiState.userProfile.name.take(16)}",
+                color = AccentTeal,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
               )
             }
           }
         },
         actions = {
+          // Quick button to Scoring Rules
+          IconButton(
+            onClick = {
+              if (uiState.selectedTab == 5) viewModel.setTab(0) else viewModel.setTab(5)
+            },
+            modifier = Modifier.testTag("nav_btn_rules")
+          ) {
+            Icon(
+              Icons.Default.BarChart,
+              contentDescription = "Reglas de Puntuación",
+              tint = if (uiState.selectedTab == 5) AccentGold else TextMuted
+            )
+          }
+
           Surface(
             shape = RoundedCornerShape(20.dp),
             color = AccentGold.copy(alpha = 0.15f),
             border = androidx.compose.foundation.BorderStroke(1.dp, AccentGold),
             modifier = Modifier
               .padding(end = 12.dp)
-              .clickable { viewModel.setTab(4) }
+              .clickable { viewModel.setTab(3) }
           ) {
             Row(
               modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -164,8 +190,8 @@ fun MasterDTApp(
         tonalElevation = 8.dp
       ) {
         NavigationBarItem(
-          icon = { Icon(Icons.Default.SportsSoccer, contentDescription = "Cancha") },
-          label = { Text("Cancha", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+          icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+          label = { Text("Home", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
           selected = uiState.selectedTab == 0,
           onClick = { viewModel.setTab(0) },
           colors = NavigationBarItemDefaults.colors(
@@ -175,12 +201,12 @@ fun MasterDTApp(
             unselectedTextColor = TextMuted,
             indicatorColor = AccentGold.copy(alpha = 0.2f)
           ),
-          modifier = Modifier.testTag("nav_item_cancha")
+          modifier = Modifier.testTag("nav_item_home")
         )
 
         NavigationBarItem(
-          icon = { Icon(Icons.Default.Assignment, contentDescription = "Plantilla") },
-          label = { Text("Plantilla", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+          icon = { Icon(Icons.Default.Groups, contentDescription = "Plantilla") },
+          label = { Text("Plantilla", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
           selected = uiState.selectedTab == 1,
           onClick = { viewModel.setTab(1) },
           colors = NavigationBarItemDefaults.colors(
@@ -194,25 +220,10 @@ fun MasterDTApp(
         )
 
         NavigationBarItem(
-          icon = { Icon(Icons.Default.BarChart, contentDescription = "Puntajes") },
-          label = { Text("Puntajes", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+          icon = { Icon(Icons.Default.EmojiEvents, contentDescription = "Ligas") },
+          label = { Text("Ligas", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
           selected = uiState.selectedTab == 2,
           onClick = { viewModel.setTab(2) },
-          colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = AccentGold,
-            selectedTextColor = AccentGold,
-            unselectedIconColor = TextMuted,
-            unselectedTextColor = TextMuted,
-            indicatorColor = AccentGold.copy(alpha = 0.2f)
-          ),
-          modifier = Modifier.testTag("nav_item_puntajes")
-        )
-
-        NavigationBarItem(
-          icon = { Icon(Icons.Default.EmojiEvents, contentDescription = "Ligas") },
-          label = { Text("Ligas", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
-          selected = uiState.selectedTab == 3,
-          onClick = { viewModel.setTab(3) },
           colors = NavigationBarItemDefaults.colors(
             selectedIconColor = AccentGold,
             selectedTextColor = AccentGold,
@@ -224,8 +235,23 @@ fun MasterDTApp(
         )
 
         NavigationBarItem(
-          icon = { Icon(Icons.Default.Work, contentDescription = "Agente") },
-          label = { Text("Agente", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+          icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = "Agente") },
+          label = { Text("Agente", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+          selected = uiState.selectedTab == 3,
+          onClick = { viewModel.setTab(3) },
+          colors = NavigationBarItemDefaults.colors(
+            selectedIconColor = AccentGold,
+            selectedTextColor = AccentGold,
+            unselectedIconColor = TextMuted,
+            unselectedTextColor = TextMuted,
+            indicatorColor = AccentGold.copy(alpha = 0.2f)
+          ),
+          modifier = Modifier.testTag("nav_item_agente")
+        )
+
+        NavigationBarItem(
+          icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+          label = { Text("Perfil", fontSize = 10.sp, fontWeight = FontWeight.Bold) },
           selected = uiState.selectedTab == 4,
           onClick = { viewModel.setTab(4) },
           colors = NavigationBarItemDefaults.colors(
@@ -235,7 +261,7 @@ fun MasterDTApp(
             unselectedTextColor = TextMuted,
             indicatorColor = AccentGold.copy(alpha = 0.2f)
           ),
-          modifier = Modifier.testTag("nav_item_agente")
+          modifier = Modifier.testTag("nav_item_perfil")
         )
       }
     }
@@ -248,9 +274,10 @@ fun MasterDTApp(
       when (uiState.selectedTab) {
         0 -> PitchScreen(viewModel = viewModel, uiState = uiState)
         1 -> SquadBuilderScreen(viewModel = viewModel, uiState = uiState)
-        2 -> ScoringRulesScreen()
-        3 -> LeaguesScreen(viewModel = viewModel, uiState = uiState)
-        4 -> AgentScreen(viewModel = viewModel, uiState = uiState)
+        2 -> LeaguesScreen(viewModel = viewModel, uiState = uiState)
+        3 -> AgentScreen(viewModel = viewModel, uiState = uiState)
+        4 -> ProfileScreen(viewModel = viewModel, uiState = uiState)
+        5 -> ScoringRulesScreen()
       }
 
       // Dialogs

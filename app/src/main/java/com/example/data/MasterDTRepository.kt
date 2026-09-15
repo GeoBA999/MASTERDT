@@ -1,11 +1,14 @@
 package com.example.data
 
 import com.example.models.AuditLog
+import com.example.models.ChargeHistoryItem
+import com.example.models.GameHistoryItem
 import com.example.models.KycRequest
 import com.example.models.LeagueItem
 import com.example.models.Player
 import com.example.models.Position
 import com.example.models.TokenTier
+import com.example.models.UserProfile
 
 object MasterDTRepository {
 
@@ -75,5 +78,117 @@ object MasterDTRepository {
   val initialKycRequests = listOf(
     KycRequest("USER-COL-5512", "Daniel Riascos", "C.C. 1.032.489.120", 850000L, "Nequi 314 220 9811", "PENDIENTE_REVISION"),
     KycRequest("USER-COL-7720", "Julián Morales", "C.C. 80.412.980", 2300000L, "Bancolombia Ahorros 410-9921", "APROBADO")
+  )
+
+  val defaultUser = UserProfile(
+    id = "USR-7704-COL",
+    name = "Juan Camilo Restrepo",
+    email = "juancamilo.dt@gmail.com",
+    phone = "312 458 9201",
+    documentId = "1.037.625.890",
+    city = "Medellín, Antioquia",
+    avatarEmoji = "👑",
+    favoriteClub = "Atlético Nacional",
+    tierLabel = "DT Verificado • Nivel 2",
+    kycVerified = true,
+    registeredDate = "12 Ene 2026"
+  )
+
+  val initialChargeHistory = listOf(
+    ChargeHistoryItem(
+      id = "CHG-9021",
+      date = "14 Sep 2026, 17:35",
+      tokensAdded = 350,
+      amountCop = 29900L,
+      paymentMethod = "Nequi",
+      reference = "TRX-NQ-992102",
+      hash = "0x8f2a...1e40",
+      status = "COMPLETADO"
+    ),
+    ChargeHistoryItem(
+      id = "CHG-8910",
+      date = "11 Sep 2026, 14:12",
+      tokensAdded = 750,
+      amountCop = 59900L,
+      paymentMethod = "Daviplata",
+      reference = "DP-772183",
+      hash = "0x4c11...99bb",
+      status = "COMPLETADO"
+    ),
+    ChargeHistoryItem(
+      id = "CHG-8742",
+      date = "05 Sep 2026, 19:48",
+      tokensAdded = 100,
+      amountCop = 9900L,
+      paymentMethod = "Bancolombia QR",
+      reference = "BC-8812938",
+      hash = "0x33e8...7a20",
+      status = "COMPLETADO"
+    ),
+    ChargeHistoryItem(
+      id = "CHG-8501",
+      date = "28 Ago 2026, 10:05",
+      tokensAdded = 1400,
+      amountCop = 99900L,
+      paymentMethod = "Efecty Agente",
+      reference = "EF-5541902",
+      hash = "0x77c2...55ad",
+      status = "COMPLETADO"
+    )
+  )
+
+  val initialGameHistory = listOf(
+    GameHistoryItem(
+      id = "GH-001",
+      tournamentName = "Liga Profesional Colombia",
+      gameweek = "Jornada 9 • Liga BetPlay",
+      date = "14 Sep 2026",
+      formation = "4-3-3",
+      totalPoints = 78,
+      rank = 2,
+      totalParticipants = 10,
+      buyInTokens = 380,
+      prizeCop = 540000L,
+      status = "EN JUEGO"
+    ),
+    GameHistoryItem(
+      id = "GH-002",
+      tournamentName = "Supercopa VIP Libertadores",
+      gameweek = "Fase Grupos • Fecha 5",
+      date = "07 Sep 2026",
+      formation = "3-4-3",
+      totalPoints = 94,
+      rank = 1,
+      totalParticipants = 10,
+      buyInTokens = 750,
+      prizeCop = 1850000L,
+      status = "FINALIZADO"
+    ),
+    GameHistoryItem(
+      id = "GH-003",
+      tournamentName = "El Peor Once (Anti-Banca)",
+      gameweek = "Jornada 8 • Liga BetPlay",
+      date = "31 Ago 2026",
+      formation = "4-5-1",
+      totalPoints = 22,
+      rank = 1,
+      totalParticipants = 10,
+      buyInTokens = 120,
+      prizeCop = 690000L,
+      status = "FINALIZADO"
+    ),
+    GameHistoryItem(
+      id = "GH-004",
+      tournamentName = "Liga Aficionados BetPlay",
+      gameweek = "Jornada 7 • Liga BetPlay",
+      date = "24 Ago 2026",
+      formation = "4-3-3",
+      totalPoints = 61,
+      rank = 4,
+      totalParticipants = 10,
+      buyInTokens = 150,
+      prizeCop = 0L,
+      status = "FINALIZADO"
+    )
   )
 }

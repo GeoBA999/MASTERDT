@@ -27,7 +27,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -84,15 +88,31 @@ fun PitchScreen(
   ) {
     // 1. GAMEWEEK & LIVE SCORE HEADER
     item {
-      GameweekHeaderSection(uiState)
+      GameweekHeaderSection(
+        uiState = uiState,
+        onLeagueClick = { viewModel.setTab(2) }
+      )
     }
 
-    // 2. BUDGET TRACKER BAR
+    // 2. QUICK ACCESS LINKS MENU (HOME HUB)
     item {
-      BudgetTrackerSection(uiState)
+      HomeQuickLinksSection(
+        onNavigateToSquad = { viewModel.setTab(1) },
+        onNavigateToLeagues = { viewModel.setTab(2) },
+        onNavigateToTokens = { viewModel.setTab(3) },
+        onNavigateToRules = { viewModel.setTab(5) }
+      )
     }
 
-    // 3. CHIPS HORIZONTAL ROW
+    // 3. BUDGET TRACKER BAR (CLICKABLE TO EDIT SQUAD)
+    item {
+      BudgetTrackerSection(
+        uiState = uiState,
+        onClick = { viewModel.setTab(1) }
+      )
+    }
+
+    // 4. CHIPS HORIZONTAL ROW
     item {
       ChipsRowSection(
         activeChip = uiState.activeChip,
@@ -100,7 +120,7 @@ fun PitchScreen(
       )
     }
 
-    // 4. FORMATION SELECTOR & LIVE SIMULATE BUTTON
+    // 5. FORMATION SELECTOR & LIVE SIMULATE BUTTON
     item {
       FormationBarSection(
         selectedFormation = uiState.selectedFormation,
@@ -141,7 +161,10 @@ fun PitchScreen(
 }
 
 @Composable
-private fun GameweekHeaderSection(uiState: MasterDTUiState) {
+private fun GameweekHeaderSection(
+  uiState: MasterDTUiState,
+  onLeagueClick: () -> Unit
+) {
   val infiniteTransition = rememberInfiniteTransition(label = "pulse")
   val pulseAlpha by infiniteTransition.animateFloat(
     initialValue = 0.4f,
@@ -201,15 +224,140 @@ private fun GameweekHeaderSection(uiState: MasterDTUiState) {
         )
       }
     }
+
+    val activeLeagueName = uiState.currentEnrolledLeague?.name ?: "Liga Apertura BetPlay 2026"
+    Spacer(modifier = Modifier.height(8.dp))
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onLeagueClick() }
+        .background(AccentGold.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+        .border(1.dp, AccentGold.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+        .padding(horizontal = 10.dp, vertical = 6.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      Text(
+        text = "🏆 $activeLeagueName",
+        color = AccentGold,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold
+      )
+      Text(
+        text = "Ver Ligas ›",
+        color = FunctionalLime,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold
+      )
+    }
   }
 }
 
 @Composable
-private fun BudgetTrackerSection(uiState: MasterDTUiState) {
-  Card(
+private fun HomeQuickLinksSection(
+  onNavigateToSquad: () -> Unit,
+  onNavigateToLeagues: () -> Unit,
+  onNavigateToTokens: () -> Unit,
+  onNavigateToRules: () -> Unit
+) {
+  Row(
     modifier = Modifier
       .fillMaxWidth()
       .padding(horizontal = 16.dp, vertical = 6.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp)
+  ) {
+    QuickLinkButton(
+      icon = Icons.Default.Groups,
+      title = "Plantilla",
+      subtitle = "Armar 11",
+      accentColor = AccentTeal,
+      modifier = Modifier.weight(1f),
+      onClick = onNavigateToSquad
+    )
+    QuickLinkButton(
+      icon = Icons.Default.EmojiEvents,
+      title = "Ligas",
+      subtitle = "Competir",
+      accentColor = AccentGold,
+      modifier = Modifier.weight(1f),
+      onClick = onNavigateToLeagues
+    )
+    QuickLinkButton(
+      icon = Icons.Default.AccountBalanceWallet,
+      title = "Tokens",
+      subtitle = "Recargar",
+      accentColor = FunctionalLime,
+      modifier = Modifier.weight(1f),
+      onClick = onNavigateToTokens
+    )
+    QuickLinkButton(
+      icon = Icons.Default.BarChart,
+      title = "Reglas",
+      subtitle = "Puntajes",
+      accentColor = Color.White,
+      modifier = Modifier.weight(1f),
+      onClick = onNavigateToRules
+    )
+  }
+}
+
+@Composable
+private fun QuickLinkButton(
+  icon: androidx.compose.ui.graphics.vector.ImageVector,
+  title: String,
+  subtitle: String,
+  accentColor: Color,
+  modifier: Modifier = Modifier,
+  onClick: () -> Unit
+) {
+  Card(
+    modifier = modifier.clickable { onClick() },
+    colors = CardDefaults.cardColors(containerColor = CardForestBg),
+    shape = RoundedCornerShape(10.dp),
+    border = androidx.compose.foundation.BorderStroke(1.dp, accentColor.copy(alpha = 0.25f))
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 8.dp, horizontal = 4.dp),
+      horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+      Icon(
+        imageVector = icon,
+        contentDescription = title,
+        tint = accentColor,
+        modifier = Modifier.size(20.dp)
+      )
+      Spacer(modifier = Modifier.height(4.dp))
+      Text(
+        text = title,
+        color = Color.White,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Black,
+        maxLines = 1,
+        textAlign = TextAlign.Center
+      )
+      Text(
+        text = subtitle,
+        color = TextMuted,
+        fontSize = 9.sp,
+        maxLines = 1,
+        textAlign = TextAlign.Center
+      )
+    }
+  }
+}
+
+@Composable
+private fun BudgetTrackerSection(
+  uiState: MasterDTUiState,
+  onClick: () -> Unit
+) {
+  Card(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 16.dp, vertical = 6.dp)
+      .clickable { onClick() },
     colors = CardDefaults.cardColors(containerColor = CardForestBg),
     shape = RoundedCornerShape(12.dp),
     border = androidx.compose.foundation.BorderStroke(1.dp, AccentGold.copy(alpha = 0.15f))
@@ -253,6 +401,19 @@ private fun BudgetTrackerSection(uiState: MasterDTUiState) {
           text = "⚠️ Límite excedido: Máximo 3 jugadores por club real.",
           color = FunctionalCoral,
           fontSize = 11.sp,
+          fontWeight = FontWeight.Bold
+        )
+      }
+
+      Spacer(modifier = Modifier.height(4.dp))
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+      ) {
+        Text(
+          text = "Toca para gestionar plantilla ›",
+          color = FunctionalLime,
+          fontSize = 10.sp,
           fontWeight = FontWeight.Bold
         )
       }

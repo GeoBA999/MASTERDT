@@ -119,3 +119,42 @@ data class MatchEvent(
   val text: String,
   val time: String
 )
+
+data class UserProfile(
+  val id: String = "USR-7704-COL",
+  val name: String = "Juan Camilo Restrepo",
+  val email: String = "juancamilo.dt@gmail.com",
+  val phone: String = "312 458 9201",
+  val documentId: String = "1.037.625.890",
+  val city: String = "Medellín, Antioquia",
+  val avatarEmoji: String = "👑",
+  val favoriteClub: String = "Atlético Nacional",
+  val tierLabel: String = "DT Verificado • Nivel 2",
+  val kycVerified: Boolean = true,
+  val registeredDate: String = "12 Ene 2026"
+)
+
+data class ChargeHistoryItem(
+  val id: String,
+  val date: String,
+  val tokensAdded: Int,
+  val amountCop: Long,
+  val paymentMethod: String,
+  val reference: String,
+  val hash: String,
+  val status: String = "COMPLETADO"
+)
+
+data class GameHistoryItem(
+  val id: String,
+  val tournamentName: String,
+  val gameweek: String,
+  val date: String,
+  val formation: String,
+  val totalPoints: Int,
+  val rank: Int,
+  val totalParticipants: Int,
+  val buyInTokens: Int,
+  val prizeCop: Long,
+  val status: String = "FINALIZADO"
+)
